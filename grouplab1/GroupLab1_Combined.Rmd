@@ -1,0 +1,507 @@
+---
+title: "Group Lab 1"
+author: "Malkie Wall, Chrissie Pantojas, and Frankie Chiapetta"
+date: "September 23, 2021"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+```{r libraries, message=FALSE}
+library(ggplot2)
+library(dvmisc)
+library(scales)
+library(ggthemes)
+library(papeR)
+library(moments) #package for skewness
+library(knitr) #package for making tables (kable)
+library(tidyverse) #multiple packages for data wrangling
+library(gt) # a package to make tables
+```
+
+```{r}
+getwd()
+fracking_df = read.csv("PAFracking.csv")
+glimpse(fracking_df)
+```
+
+##Summary Statistics
+
+**(1) Methane levels near fracking sites vs. Methane levels far from fracking sites for ALL observations MALKIE**
+
+```{r }
+#MALKIE - ALL
+summary_fracking <- fracking_df %>% 
+  dplyr::group_by(proximity) %>%
+  select(methane) %>%
+  dplyr::summarize(
+                    length_methane=length(methane),
+                    min_methane=min(methane),
+                    median_methane=median(methane),
+                    mean_methane=mean(methane),
+                    max_methane=max(methane),
+                    sd_methane=sd(methane),
+                    skew_methane=skewness(methane),
+                    )
+                    
+glimpse(summary_fracking)
+```
+
+```{r}
+#MALKIE - ALL
+summary_fracking %>%
+gt() %>%
+  
+  tab_options(
+    table.width = pct(80)
+  )%>%
+  
+  cols_width(
+    vars(length_methane)~ px(100),
+    everything() ~ px(80))%>%
+  
+  tab_header(
+    title = md("Summary Statistics of Methane Levels, By Proximity to Fracking Wells"),
+    subtitle = md("ug/L methane in well water")) %>%
+  
+  fmt_passthrough (columns=c(proximity)) %>%
+  fmt_number(columns = c(length_methane), decimals = 0) %>%
+  fmt_number(columns = c(min_methane), decimals = 2) %>%
+  fmt_number(columns = c(median_methane), decimals = 2) %>%
+  fmt_number(columns = c(mean_methane), decimals=2) %>%
+  fmt_number(columns = c(max_methane), decimals = 0) %>%
+  fmt_number(columns = c(sd_methane), decimals = 2) %>%
+  fmt_number(columns = c(skew_methane), decimals = 2) %>%
+
+cols_label(
+    length_methane = "Observations",
+    min_methane = "Minimum",
+    median_methane = "Median",
+    mean_methane = "Mean",
+    max_methane = "Maximum",
+    sd_methane = "SD",
+    skew_methane = "Skewness")
+```
+
+```{r}
+#MALKIE - ALL
+p<-ggplot(fracking_df, aes(x=methane, fill=proximity))+
+geom_histogram(col="black")+
+scale_fill_manual(values=c("royalblue", "gray"))
+
+p + facet_grid(proximity ~ .)+
+labs(x="ug/L methane", title="Methane Levels in Well Water, Near Fracking Wells (n=322) and Farther Away from Fracking Wells (n=1,379)",
+     fill="Proximity to Well") 
+```
+
+**(2) Methane levels near fracking sites vs. Methane levels far from fracking sites for valley observations FRANKIE**
+
+```{r filter valley, echo = FALSE}
+#VALLEY filter data
+valley_fracking <- fracking_df %>% dplyr::filter(location == "Valley")
+head(valley_fracking)
+```
+
+```{r summary, echo = FALSE}
+#VALLEY: summary table
+
+summary_valley_fracking <-valley_fracking %>% 
+  dplyr::group_by(proximity) %>%
+  select(methane) %>%
+  dplyr::summarize(
+                    length.methane=length(methane),
+                    mean.methane=mean(methane),
+                    median.methane=median(methane),
+                    sd.methane=sd(methane),
+                    skew.methane=skewness(methane),
+                    )
+
+summary_valley_fracking
+```
+
+```{r gt summary table, echo = FALSE}
+#VALLEY: make gt summary box
+summary_valley_fracking %>%
+gt() %>%
+  tab_header(
+    title = md("Summary Statistics of Methane Levels for Far and Near Valley Sites"),
+    subtitle = "Methane measured in ug/L") %>%
+  
+ 
+  fmt_passthrough (columns=c(proximity)) %>%
+  fmt_number(columns = c(length.methane), decimals = 0) %>%
+  fmt_number(columns = c(mean.methane), decimals=4) %>%
+  fmt_number(columns = c(median.methane), decimals = 4) %>%
+  fmt_number(columns = c(sd.methane), decimals = 4) %>%
+  fmt_number(columns = c(skew.methane), decimals = 3) %>%
+
+cols_label(
+    proximity="proximity",
+    length.methane = "Observations",
+    mean.methane = "Mean",
+    median.methane = "Median",
+    sd.methane = "SD",
+    skew.methane = "Skewness")
+  
+```
+
+```{r log boxplot, echo = FALSE}
+##VALLEY: make boxplot
+p <-ggplot(valley_fracking, aes(x=log(methane), fill=proximity))+
+geom_boxplot(col="black")+
+scale_fill_manual(values=c("royalblue", "gray"))
+p + labs(x="Methane concentrations, ug/L", title="Methane levels in ug/L in Valley Sites both Far from \nWell Sites (n=709) and Close to Well Sites (n=127)",
+     fill="Proximity") 
+```
+
+```{r histograms original, message=FALSE, echo = FALSE}
+#histogram
+p<-ggplot(valley_fracking, aes(x=log(methane), fill=proximity))+
+geom_histogram(col="black")+
+scale_fill_manual(values=c("royalblue", "gray"))
+
+p + facet_grid(proximity ~ .)+
+labs(x="Methane concentrations, ug/L", title="Methane levels in ug/L in Valley Sites both Far \nfrom Well Sites (n=709) and Close to Well Sites (n=127)",
+     fill="Proximity") 
+
+
+```
+
+**(3) Methane levels near fracking sites vs. Methane levels far from fracking sites for upland observations CHRISSIE**
+
+**(4) Methane levels in the valley vs. Methane levels in the upland TOGETHER**
+```{r}
+#UPLAND & VALLEY: summary 
+summary_valley_upland_fracking <-fracking_df %>% 
+  dplyr::group_by(location) %>%
+  select(methane) %>%
+  dplyr::summarize(
+                    length.methane=length(methane),
+                    mean.methane=mean(methane),
+                    median.methane=median(methane),
+                    sd.methane=sd(methane),
+                    skew.methane=skewness(methane),
+                    )
+
+summary_valley_fracking
+```
+
+
+```{r}
+#UPLAND & VALLEY: make gt summary box
+summary_valley_upland_fracking %>%
+gt() %>%
+  tab_header(
+    title = md("Summary Statistics of Methane Levels for Upland and Valley Sites"),
+    subtitle = "Methane measured in ug/L") %>%
+  
+ 
+  fmt_passthrough (columns=c(location)) %>%
+  fmt_number(columns = c(length.methane), decimals = 0) %>%
+  fmt_number(columns = c(mean.methane), decimals=4) %>%
+  fmt_number(columns = c(median.methane), decimals = 4) %>%
+  fmt_number(columns = c(sd.methane), decimals = 4) %>%
+  fmt_number(columns = c(skew.methane), decimals = 3) %>%
+
+cols_label(
+    location="location",
+    length.methane = "Observations",
+    mean.methane = "Mean",
+    median.methane = "Median",
+    sd.methane = "SD",
+    skew.methane = "Skewness")
+  
+```
+
+
+##Comparison of means
+
+**(1) Methane levels near fracking sites vs. Methane levels far from fracking sites for ALL observations MALKIE**
+
+*Welch's t-test on original data*
+```{r}
+#Assumes mean(Far)-mean(Near). Far has lower mean methane levels than Near, so the difference (and the confidence intervals) is in the negative range. 
+#NEED TO CHECK THAT THIS INTUTION IS RIGHT.
+
+t.test(methane ~ proximity, fracking_df, alternative= "less")
+```
+
+*Test for normality on original data*
+```{r}
+#Creates new data table for proximity=Near
+near_fracking_df <- fracking_df %>% filter(proximity == "Near")%>%
+   glimpse()
+
+#Creates new data table for proximity=Far
+far_fracking_df <- fracking_df %>% filter(proximity == "Far")%>%
+   glimpse()
+```
+
+```{r}
+#Run Shapiro on Near
+near_fracking_df<-fracking_df %>%
+  filter(proximity =="Near")
+
+shapiro.test(near_fracking_df$methane)
+
+#Run Shapiro on Far
+far_fracking_df<-fracking_df %>%
+  filter(proximity =="Far")
+
+shapiro.test(far_fracking_df$methane)
+```
+
+*Histogram on logged data*
+```{r}
+#Create a new variable of logged methane levels called log_methane and add to dataframe fracking_df
+fracking_df$log_methane<-log(fracking_df$methane)
+head(fracking_df)
+
+#Make histogram of logged data
+p<-ggplot(fracking_df, aes(x=log_methane, fill=proximity))+
+geom_histogram(col="black")+
+scale_fill_manual(values=c("royalblue", "gray"))
+
+p + facet_grid(proximity ~ .)+
+labs(x="ug/L methane, logged", title="Logged Methane Levels in Well Water, Near Fracking Wells (n=322) and Farther Away from Fracking Wells (n=1,379)",
+     fill="Proximity to Well") 
+```
+
+*Shapiro-Wilk test on logged data*
+```{r}
+#Check that Near and Far data frames have logged methane variable
+near_fracking_df<-fracking_df %>%
+  filter(proximity =="Near")
+head (near_fracking_df)
+
+far_fracking_df<-fracking_df %>%
+  filter(proximity =="Far")
+head (far_fracking_df)
+
+```
+
+```{r}
+#Run Shapiro on Near_logged
+shapiro.test(near_fracking_df$log_methane)
+
+#Run Shapiro on Far_logged
+shapiro.test(far_fracking_df$log_methane)
+```
+
+*Welch's t-test on logged data*
+```{r}
+#Assumes mean(Far)-mean(Near). Far has lower mean methane levels than Near, so the difference (and the confidence intervals) is in the negative range. 
+#CONFIRM THAT THIS ASSUMPTION IS CORRECT.
+
+t.test(log_methane ~ proximity, fracking_df, alternative="less")
+```
+
+*Confidence Interval on logged data*
+```{r}
+str(t.test(log_methane ~ proximity, fracking_df, alternative="less"))
+logged_mean_far_fracking <- t.test(log_methane ~ proximity, data=fracking_df)$estimate[1]
+logged_mean_near_fracking <- t.test(log_methane ~ proximity, data=fracking_df)$estimate[2]
+```
+
+```{r}
+logged_mean_far_fracking
+logged_mean_near_fracking
+```
+
+```{r}
+#Again, mean(Far) - mean (Near)
+#Exponentiate difference of log data to get multiplicative factor of the medians.
+
+exp_mean_diff<- exp(logged_mean_far_fracking - logged_mean_near_fracking)
+exp_mean_diff
+```
+
+*Confidence interval for the multiplicative factor of the means*
+```{r}
+#Now, we also need to back transform the confidence interval and that becomes the confidence interval for the multiplicative factor of the medians! 
+
+#THESE ARE THE NUMBERS FROM THE TUTORIAL.  MY OUTPUT SAYS -Inf -0.6091616. WHAT DO I MAKE OF THAT?
+#95 percent confidence interval:
+       #-Inf -0.6091616
+
+  
+upper.exp<-exp(-0.6091616)
+upper.exp
+
+#The 95% confidence interval for the multiplicative factor of the medians is (lower.exp, upper.exp). We are 95% confidence that this interval includes the true multiplicative factor of the medians!
+```
+
+*Non-parametric test = Wilcox test*
+```{r}
+wilcox.test(methane ~ proximity, data = fracking_df)
+
+```
+
+
+**(2) Methane levels near fracking sites vs. Methane levels far from fracking sites for valley observations FRANKIE**
+
+*Welch's t-test on original data*
+```{r original data ttest, echo = FALSE}
+##VALLEY: Welch t test for original data
+ttest_original_valley <- t.test(methane ~ proximity, valley_fracking, alternative = "less")
+ttest_original_valley
+```
+
+*mean difference on original data*
+```{r exp diff in means, echo = FALSE}
+#VALLEY: mean difference
+exp_mean_diff <- exp(ttest_original_valley$estimate[1] - ttest_original_valley$estimate[2])
+exp_mean_diff
+```
+
+*Test for normality on original data*
+```{r sw.far.original, echo = FALSE}
+##VALLEY: Shapiro Wilk test for original data of valley sites: far 
+valley_fracking_far <-valley_fracking %>%
+  filter(proximity =="Far")
+
+
+shapiro.test(valley_fracking_far$methane)
+```
+
+```{r sw.near.original, echo = FALSE}
+##VALLEY: Shapiro Wilk test for original data of valley sites: near
+valley_fracking_near <-valley_fracking %>%
+  filter(proximity =="Near")
+
+
+shapiro.test(valley_fracking_near$methane)
+```
+
+*Make logged data*
+```{r log, echo = FALSE}
+#VALLEY: save new column as log methane
+valley_fracking$log_methane <- log(valley_fracking$methane)
+head(valley_fracking)
+```
+
+*Histogram on logged data *
+```{r histograms logged, message=FALSE, echo = FALSE}
+#VALLEY: histogram on logged data
+p<-ggplot(valley_fracking, aes(x=log(log_methane), fill=proximity))+
+geom_histogram(col="black")+
+scale_fill_manual(values=c("royalblue", "gray"))
+
+p + facet_grid(proximity ~ .)+
+labs(x="Logged methane concentrations, ug/L", title="Logged methane levels in ug/L in Valley Sites both Far \nfrom Well Sites (n=709) and Close to Well Sites (n=127)",
+     fill="Proximity") 
+
+
+```
+
+*Shapiro-Wilk test on logged data*
+```{r sw.far.log, echo = FALSE}
+#VALLEY: Shapiro Wilk test for logged data of valley sites: far 
+valley_fracking_far <-valley_fracking %>%
+  filter(proximity =="Far")
+
+
+shapiro.test(valley_fracking_far$log_methane)
+```
+
+```{r sw.near.log, echo = FALSE}
+#VALLEY: Shapiro Wilk test for logged data of valley sites: near 
+valley_fracking_near <-valley_fracking %>% filter(proximity =="Near")
+
+shapiro.test(valley_fracking_near$log_methane)
+```
+
+*Welch's t-test on logged data*
+```{r log ttest, echo = FALSE}
+#VALLEY: Welch t test for logged data
+log_ttest <- t.test(log_methane ~ proximity, valley_fracking, alternative = "less")
+log_ttest
+```
+
+
+*Confidence interval for the multiplicative factor of the means*
+
+```{r logged summary statistics, echo = FALSE}
+#VALLEY: Confidence interval for the logged data
+
+xbar1 <- mean(valley_fracking_far$log_methane)
+xbar2 <- mean(valley_fracking_near$log_methane)
+
+s1 <- sd(valley_fracking_far$log_methane)
+s2 <-  sd(valley_fracking_near$log_methane) 
+
+n1 <-  length(valley_fracking_far$log_methane) 
+n2 <- length(valley_fracking_near$log_methane) 
+  
+```
+
+
+```{r CI, echo = FALSE}
+#VALLEY: SET DEGREES OF FREEDOM
+A<-s1^2/n1
+B<-s2^2/n2
+
+df<-(A+B)^2/(A^2/(n1-1)+B^2/(n2-1))
+
+
+#VALLEY: CI
+multiplier<- qt(0.95, df = df)
+sqroot <- sqrt((s1^2/n1)+(s2^2/n2))
+means_difference <- xbar1-xbar2
+
+lower_bound <- means_difference - multiplier * sqroot
+
+upper_bound <- means_difference + multiplier * sqroot
+
+lower_bound_exp <- exp(lower_bound)
+lower_bound_exp
+upper_bound_exp <- exp(upper_bound)
+upper_bound_exp
+```
+
+
+
+*Non-parametric test = Wilcox test*
+```{r, echo = FALSE}
+#VALLEY: wilcox test, non parametric
+wilcox_valley_fracking <- wilcox.test(methane ~ proximity, data = valley_fracking)
+wilcox_valley_fracking
+```
+
+**(3) Methane levels near fracking sites vs. Methane levels far from fracking sites for upland observations CHRISSIE**
+
+*Welch's t-test on original data*
+
+*Test for normality on original data*
+
+*Histogram on logged data *
+
+*Shapiro-Wilk test on logged data*
+
+*Welch's t-test on logged data*
+
+*Confidence Interval on logged data*
+
+*Confidence interval for the multiplicative factor of the means*
+
+*Non-parametric test = Wilcox test*
+
+
+**(4) Methane levels in the valley vs. Methane levels in the upland TOGETHER**
+
+*Welch's t-test on original data*
+
+*Test for normality on original data*
+
+*Histogram on logged data *
+
+*Shapiro-Wilk test on logged data*
+
+*Welch's t-test on logged data*
+
+*Confidence Interval on logged data*
+
+*Confidence interval for the multiplicative factor of the means*
+
+*Non-parametric test = Wilcox test*
+
