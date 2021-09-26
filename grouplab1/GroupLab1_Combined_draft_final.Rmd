@@ -2,7 +2,8 @@
 title: "Group Lab 1"
 author: "Malkie Wall, Chrissie Pantoja, and Frankie Chiappetta"
 date: "September 23, 2021"
-output: rtf_document
+output:
+  html_document: default
 ---
 
 ## Interpretation
@@ -353,7 +354,7 @@ shapiro.test(far_fracking_df$methane)
 ```
 
 *Histogram on logged data*
-```{r, echo=FALSE, messgaes = FALSE, fig.height=5, fig.width=7}
+```{r, echo=FALSE, messages = FALSE, fig.height=5, fig.width=7}
 #Create a new variable of logged methane levels called log_methane and add to dataframe fracking_df
 fracking_df$log_methane<-log(fracking_df$methane)
 head(fracking_df)
@@ -695,22 +696,14 @@ ttest_original_valley_upland
 #Creates new data table for location is valley
 valley_fracking_df <- fracking_df %>% filter(location == "Valley")
 
-#Creates new data table for location is valley
+#Creates new data table for location is upland
 upland_fracking_df <- fracking_df %>% filter(location == "Upland")
 ```
 
 ```{r upland & valley sw, echo = FALSE}
-#Run Shapiro on Valley
-upland_fracking_df<-fracking_df %>%
-  filter(location =="Upland")
+shapiro.test(valley_fracking_df$methane)
 
 shapiro.test(upland_fracking_df$methane)
-
-#Run Shapiro on Upland
-valley_fracking_df<-fracking_df %>%
-  filter(location =="Valley")
-
-shapiro.test(valley_fracking_df$methane)
 ```
 
 *Histogram on logged data*
