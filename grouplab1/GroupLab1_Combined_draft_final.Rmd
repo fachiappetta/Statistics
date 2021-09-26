@@ -4,6 +4,7 @@ author: "Malkie Wall, Chrissie Pantoja, and Frankie Chiappetta"
 date: "September 23, 2021"
 output:
   html_document: default
+  HTML: default
 ---
 
 ## Interpretation
@@ -370,17 +371,6 @@ labs(x="Logged methane concentrations in ug/L", title="Figure 5. Logged methane 
 
 ```
 
-*Boxplot on logged data *
-```{r log boxplot for all sites, echo= FALSE, fig.height=5, fig.width=7}
-##VALLEY: make boxplot
-p <-ggplot(fracking_df, aes(x=log_methane, fill=proximity))+
-geom_boxplot(col="black")+
-scale_fill_manual(values=c("royalblue", "gray"))
-p + labs(x="Logged methane concentrations in ug/L", title="Figure 6. Logged methane Levels in Well Water for Sites Near Fracking Wells (n=322) \nand Far from Fracking Wells (n=1,379) in Pennsylvania",
-     fill="Proximity to Well") + theme(plot.title = element_text(size = 12))
-
-```
-
 *Shapiro-Wilk test on logged data*
 ```{r, echo = FALSE, results = FALSE}
 #Check that Near and Far data frames have logged methane variable
@@ -500,20 +490,9 @@ geom_histogram(col="black", bins = 15)+
 scale_fill_manual(values=c("royalblue", "gray"))
 
 p + facet_grid(proximity ~ .)+
-labs(x="Logged methane concentrations in ug/L", title="Figure 7. Logged methane levels in ug/L in Well Water for Valley Sites Near \nFracking Wells (n=195) and Far from Fracking Wells (n=670) in Pennsylvania",
+labs(x="Logged methane concentrations in ug/L", title="Figure 6. Logged methane levels in ug/L in Well Water for Valley Sites Near \nFracking Wells (n=195) and Far from Fracking Wells (n=670) in Pennsylvania",
      fill="Proximity") + theme(plot.title = element_text(size = 12))
 
-
-```
-
-*Boxplot on logged data *
-```{r log boxplot, echo = FALSE, fig.height=5, fig.width=7}
-##VALLEY: make boxplot
-p <-ggplot(valley_fracking, aes(x=log(methane), fill=proximity))+
-geom_boxplot(col="black")+
-scale_fill_manual(values=c("royalblue", "gray"))
-p + labs(x="Logged methane concentrations in ug/L", title="Figure 8. Logged methane levels in ug/L in Well Water for Valley Sites Near \nFracking Wells (n=195) and Far from Fracking Wells (n=670) in Pennsylvania",
-     fill="Proximity to Well")+ theme(plot.title = element_text(size = 12))
 
 ```
 
@@ -613,20 +592,9 @@ geom_histogram(col="black", bins = 15)+
 scale_fill_manual(values=c("royalblue", "gray"))
 
 histo + facet_grid(proximity ~ .)+
-labs(x="Logged methane concentration in ug/L", title="Figure 9. Logged methane levels in ug/L in Well Water for Upland Sites Near Fracking \nWells (n=127) and Far from Fracking Wells (n=709) in Pennsylvania",
+labs(x="Logged methane concentration in ug/L", title="Figure 7. Logged methane levels in ug/L in Well Water for Upland Sites Near Fracking \nWells (n=127) and Far from Fracking Wells (n=709) in Pennsylvania",
      fill="Proximity to Well")+ theme(plot.title = element_text(size = 12))
 ```
-*Boxplot on logged data*
-```{r log boxplot upland, echo = FALSE, fig.height=5, fig.width=7}
-##Upland: make boxplot
-p <-ggplot(upland_fracking.df, aes(x=log.methane, fill=proximity))+
-geom_boxplot(col="black")+
-scale_fill_manual(values=c("royalblue", "gray"))
-p + labs(x="Logged methane concentrations, ug/L", title="Figure 10. Logged methane levels in ug/L in Well Water for Upland Sites Near Fracking \nWells (n=127) and Far from Fracking Wells (n=709) in Pennsylvania",
-     fill="Proximity to Well")+ theme(plot.title = element_text(size = 12))
-
-```
-
 
 *Shapiro-Wilk test on logged data*
 
@@ -687,7 +655,7 @@ wilcox_upland_fracking
 *Welch's t-test on original data*
 ```{r upland & valley original data ttest, echo = FALSE}
 #upland & valley: Welch t test for original data
-ttest_original_valley_upland <- t.test(methane ~ location, fracking_df)
+ttest_original_valley_upland <- t.test(methane ~ location, fracking_df, alternative = "less")
 ttest_original_valley_upland
 ```
 
@@ -715,25 +683,13 @@ geom_histogram(col="black", bins = 15)+
 scale_fill_manual(values=c("royalblue", "gray"))
 
 p + facet_grid(location ~ .)+
-labs(x="Figure 11. Logged methane concentration in ug/L", title="Logged methane levels in ug/L in Well Water for All Sites Near Fracking \nWells (n=127) and Far from Fracking Wells (n=709) in Pennsylvania",
+labs(x="Figure 8. Logged methane concentration in ug/L", title="Logged methane levels in ug/L in Well Water for All Sites Near Fracking \nWells (n=127) and Far from Fracking Wells (n=709) in Pennsylvania",
      fill="Proximity to Well")+ theme(plot.title = element_text(size = 12))
 
 
 
 ```
 
-
-
-*Boxplot on logged data*
-
-```{r upland & valley log boxplot, echo = FALSE, fig.height=5, fig.width=7}
-#upland & valley: make boxplot
-p <-ggplot(fracking_df, aes(x=log_methane, fill=location))+
-geom_boxplot(col="black")+
-scale_fill_manual(values=c("royalblue", "gray"))
-p + labs(x="Figure 12. Logged methane concentrations, ug/L", title="Logged methane levels in ug/L in Well Water for Upland Sites Near Fracking Wells (n=127) \nand Far from Fracking Wells (n=709) in Pennsylvania",
-     fill="Proximity to Well")+ theme(plot.title = element_text(size = 12))
-```
 
 *Shapiro-Wilk test on logged data*
 ```{r upland & valley logged sw for upland, echo = FALSE}
@@ -749,7 +705,7 @@ shapiro.test(valley_fracking_df$log_methane)
 *Welch's t-test on logged data*
 ```{r upland & valley log ttest, echo = FALSE}
 #upland and valley: Welch t test for logged data
-log_ttest_valley_upland <- t.test(log_methane ~ location, fracking_df)
+log_ttest_valley_upland <- t.test(log_methane ~ location, fracking_df, alternative = "less")
 log_ttest_valley_upland
 ```
 
@@ -760,7 +716,7 @@ CI_lower_valley_upland <- exp(log_ttest_valley_upland$conf.int[1])
 
 CI_upper_valley_upland <- exp(log_ttest_valley_upland$conf.int[2])
 
-glue("The confidence interval for all sites for upland and valley is{round(CI_lower_valley_upland,4)} to {round(CI_upper_valley_upland,4)} ug/L")
+glue("The confidence interval for all sites for upland and valley is {CI_lower_valley_upland} to {round(CI_upper_valley_upland,4)} ug/L")
 
 ```
 
@@ -938,7 +894,7 @@ geom_histogram(col="black", bins = 15)+
 scale_fill_manual(values=c("royalblue", "gray"))
 
 p + facet_grid(proximity ~ .)+
-labs(x="Methane concentrations in ug/L", title="Figure 13. Methane Levels of Censored Observations (dl = 1) in Well Water for Sites \nNear Fracking Wells (n=322) and Far from Fracking Wells (n=1,379) in Pennsylvania",
+labs(x="Methane concentrations in ug/L", title="Figure 9. Methane Levels of Censored Observations (dl = 1) in Well Water for Sites \nNear Fracking Wells (n=322) and Far from Fracking Wells (n=1,379) in Pennsylvania",
      fill="Proximity to Well") + theme(plot.title = element_text(size = 12))
 ```
 
